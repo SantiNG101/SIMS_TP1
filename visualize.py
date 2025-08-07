@@ -30,11 +30,25 @@ def visualize_simulation():
         print("Error: 'neighborsCIM.txt' no encontrado. Ejecuta la simulación en Java primero.")
         return
 
-    # Elegir una partícula aleatoria
-    special_particle = random.choice(list(particles.keys()))
+    # Elegir una partícula
+    user_input = input("Ingresá el ID de la partícula especial (Enter para elegir aleatoriamente): ").strip()
+
+    if user_input == "":
+        special_particle = random.choice(list(particles.keys()))
+        print(f"Elegida aleatoriamente: partícula {special_particle}")
+    else:
+        try:
+            special_particle = int(user_input)
+            if special_particle not in particles:
+                print(f"El ID {special_particle} no existe. Abortando visualización.")
+                return
+        except ValueError:
+            print("Entrada inválida. Ingresá un número o dejalo vacío para elegir aleatoriamente.")
+            return
+
     special_neighbors = all_neighbors.get(special_particle, set())
 
-    print(special_particle)
+    print("-------------------------------------")
 
     # --- Gráfico ---
     fig, ax = plt.subplots(figsize=(8, 8))
