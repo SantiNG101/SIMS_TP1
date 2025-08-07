@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
+import random
 
 def visualize_simulation():
 
@@ -7,7 +8,7 @@ def visualize_simulation():
     all_neighbors = {}
 
     try:
-        with open('particles.txt', 'r') as f:
+        with open('particlesCIM.txt', 'r') as f:
             header = f.readline().strip().split()
             N, L, M = int(header[0]), float(header[1]), int(header[2])
             for line in f:
@@ -15,19 +16,25 @@ def visualize_simulation():
                 p_id, x, y, r = int(parts[0]), float(parts[1]), float(parts[2]), float(parts[3])
                 particles[p_id] = {'x': x, 'y': y, 'r': r}
     except FileNotFoundError:
-        print("Error: 'particles.txt' no encontrado. Ejecuta la simulación en Java primero.")
+        print("Error: 'particlesCIM.txt' no encontrado. Ejecuta la simulación en Java primero.")
         return
 
     try:
-        with open('neighbors.txt', 'r') as f:
+        with open('neighborsCIM.txt', 'r') as f:
             for line in f:
                 parts = [int(p) for p in line.strip().split()]
                 p_id = parts[0]
                 neighbors = set(parts[1:])
                 all_neighbors[p_id] = neighbors
     except FileNotFoundError:
-        print("Error: 'neighbors.txt' no encontrado. Ejecuta la simulación en Java primero.")
+        print("Error: 'neighborsCIM.txt' no encontrado. Ejecuta la simulación en Java primero.")
         return
+
+    # Elegir una partícula aleatoria
+    special_particle = random.choice(list(particles.keys()))
+    special_neighbors = all_neighbors.get(special_particle, set())
+
+    print(special_particle)
 
     # --- Gráfico ---
     fig, ax = plt.subplots(figsize=(8, 8))
@@ -41,11 +48,19 @@ def visualize_simulation():
         ax.axhline(pos, color='lightgray', linestyle='--', linewidth=0.5)
         ax.axvline(pos, color='lightgray', linestyle='--', linewidth=0.5)
 
+    # Dibujar partículas con colores especiales
     for p_id, data in particles.items():
+        if p_id == special_particle:
+            color = 'orange'
+        elif p_id in special_neighbors:
+            color = 'lightgreen'
+        else:
+            color = 'skyblue'
         circle = patches.Circle((data['x'], data['y']), radius=data['r'],
-                                facecolor='skyblue', edgecolor='black', linewidth=0.75, zorder=10)
+                                facecolor=color, edgecolor='black', linewidth=0.75, zorder=10)
         ax.add_patch(circle)
 
+    # Dibujar líneas entre vecinos
     drawn_pairs = set()
     for p_id, neighbors in all_neighbors.items():
         p1_coords = (particles[p_id]['x'], particles[p_id]['y'])
