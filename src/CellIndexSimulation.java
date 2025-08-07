@@ -17,6 +17,7 @@ public class CellIndexSimulation {
     private final List<Particle> particles;
     private final Map<Integer, List<Particle>> grid;
     private final double cellSize;
+    private final long TIMESTEPS = 0;
 
     public CellIndexSimulation(int N, double L, int M, double rc, double particleRadius, boolean periodic) {
         this.N = N;
@@ -170,6 +171,23 @@ public class CellIndexSimulation {
                 writer.write("\n");
             }
         }
+
+        try (FileWriter writer = new FileWriter("static" + fileName + ".txt")) {
+            writer.write(String.format("%d %f \n", N, L));
+            for (Particle p : particles) {
+                writer.write(p.getStaticInfo() + "\n");
+            }
+        }
+
+        try (FileWriter writer = new FileWriter("dynamic" + fileName + ".txt")) {
+            for (long t = 0; t <= TIMESTEPS; t++) {
+                writer.write("t="+t+"\n");
+                for (Particle p : particles) {
+                    writer.write(p.getDynamicInfo() + "\n");
+                }
+            }
+        }
+
     }
 
     public static void main(String[] args) {

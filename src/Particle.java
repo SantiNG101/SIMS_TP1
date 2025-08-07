@@ -20,4 +20,12 @@ public class Particle {
     public String toString() {
         return String.format("%d %.4f %.4f %.4f", id, x, y, radius);
     }
+
+    public String getStaticInfo() {
+        return String.format("%.4f %.4f", radius, Math.PI * Math.pow(radius, 2));
+    }
+
+    public String getDynamicInfo() {
+        return String.format("%.4f %.4f", x, y);
+    }
 }
