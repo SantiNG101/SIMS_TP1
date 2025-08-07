@@ -67,8 +67,9 @@ public class CellIndexSimulation {
                 int cellIndex = cellX + cellY * M;
                 List<Integer> neighbors = new ArrayList<>();
 
-                for (int dx = -1; dx <= 1; dx++) {
+                for (int dx = 0; dx <= 1; dx++) {
                     for (int dy = -1; dy <= 1; dy++) {
+                        if ( dx==0 && dy==-1 ) continue;
                         int neighborCellX = cellX + dx;
                         int neighborCellY = cellY + dy;
 
@@ -101,11 +102,11 @@ public class CellIndexSimulation {
 
             for (int neighborIndex : cellNeighbors.get(cellIndex)) {
                 for (Particle p2 : grid.get(neighborIndex)) {
-                    if (p1.getId() == p2.getId()) continue;
+                    if (neighborIndex==cellIndex && p1.getId() >= p2.getId()) continue;
 
                     double dist = calculateDistance(p1, p2);
 
-                    if (dist - p1.getRadius() - p2.getRadius() < rc && p1.getId() < p2.getId()) {
+                    if (dist - p1.getRadius() - p2.getRadius() < rc ) {
                         neighbors.add(p2.getId());
                     }
                 }
