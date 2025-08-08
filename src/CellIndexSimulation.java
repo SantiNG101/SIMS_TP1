@@ -2,17 +2,19 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 public class CellIndexSimulation {
 
-    private final int N; // Number of particles
-    private final double L; // Side length of the area
-    private final int M; // Number of cells per row/column
-    private final double rc; // Interaction radius
+    private final int N;
+    private final double L; 
+    private final int M; 
+    private final double rc; 
     private final boolean periodic;
     private final List<Particle> particles;
     private final Map<Integer, List<Particle>> grid;
@@ -47,75 +49,97 @@ public class CellIndexSimulation {
     }
 
     private void initializeGrid() {
-        for (int i = 0; i < M * M; i++) {
-            grid.put(i, new ArrayList<>());
-        }
-        for (Particle p : particles) {
-            int cellX = (int) (p.getX() / cellSize);
-            int cellY = (int) (p.getY() / cellSize);
-            int cellIndex = cellX + cellY * M;
-            grid.get(cellIndex).add(p);
-        }
+    for (int i = 0; i < M * M; i++) {
+        grid.put(i, new ArrayList<>());
     }
+    for (Particle p : particles) {
+        int cellX = Math.min((int) (p.getX() / cellSize), M - 1);
+        int cellY = Math.min((int) (p.getY() / cellSize), M - 1);
+        int cellIndex = cellX + cellY * M;
+        grid.get(cellIndex).add(p);
+    }
+}
+
 
     private Map<Integer, List<Integer>> cellNeighbors;
 
-    private void computeCellNeighbors() {
-        cellNeighbors = new HashMap<>();
+private void computeCellNeighbors() {
+    cellNeighbors = new HashMap<>();
 
-        for (int cellY = 0; cellY < M; cellY++) {
-            for (int cellX = 0; cellX < M; cellX++) {
-                int cellIndex = cellX + cellY * M;
-                List<Integer> neighbors = new ArrayList<>();
+    for (int cellY = 0; cellY < M; cellY++) {
+        for (int cellX = 0; cellX < M; cellX++) {
+            int cellIndex = cellX + cellY * M;
+            List<Integer> neighbors = new ArrayList<>();
 
-                for (int dx = 0; dx <= 1; dx++) {
-                    for (int dy = -1; dy <= 1; dy++) {
-                        if ( dx==0 && dy==-1 ) continue;
-                        int neighborCellX = cellX + dx;
-                        int neighborCellY = cellY + dy;
+            for (int dx = -1; dx <= 1; dx++) {
+                for (int dy = -1; dy <= 1; dy++) {
 
-                        if (periodic) {
-                            neighborCellX = (neighborCellX + M) % M;
-                            neighborCellY = (neighborCellY + M) % M;
-                        }
+                    if (dx == 0 && dy == 0) continue;
 
-                        if (!periodic && (neighborCellX < 0 || neighborCellX >= M || neighborCellY < 0 || neighborCellY >= M)) {
-                            continue;
-                        }
+                    int neighborCellX = cellX + dx;
+                    int neighborCellY = cellY + dy;
 
-                        int neighborCellIndex = neighborCellX + neighborCellY * M;
-                        neighbors.add(neighborCellIndex);
+                    if (periodic) {
+                        neighborCellX = (neighborCellX + M) % M;
+                        neighborCellY = (neighborCellY + M) % M;
                     }
+
+                    if (!periodic && (neighborCellX < 0 || neighborCellX >= M || neighborCellY < 0 || neighborCellY >= M)) {
+                        continue;
+                    }
+
+                    int neighborCellIndex = neighborCellX + neighborCellY * M;
+                    neighbors.add(neighborCellIndex);
                 }
-                cellNeighbors.put(cellIndex, neighbors);
             }
+
+            cellNeighbors.put(cellIndex, neighbors);
         }
     }
+}
+
 
 
     public Map<Integer, List<Integer>> findNeighborsCIM() {
-        Map<Integer, List<Integer>> allNeighbors = new HashMap<>();
+        Map<Integer, Set<Integer>> allNeighbors = new HashMap<>();
+        for (Particle p : particles) {
+            allNeighbors.put(p.getId(), new HashSet<>());
+        }
+
         for (Particle p1 : particles) {
-            List<Integer> neighbors = new ArrayList<>();
-            int cellX = (int) (p1.getX() / cellSize);
-            int cellY = (int) (p1.getY() / cellSize);
+            int cellX = Math.min((int) (p1.getX() / cellSize), M - 1);
+            int cellY = Math.min((int) (p1.getY() / cellSize), M - 1);
             int cellIndex = cellX + cellY * M;
+
+            for (Particle p2 : grid.get(cellIndex)) {
+                if (p1.getId() >= p2.getId()) continue;
+                double dist = calculateDistance(p1, p2);
+                if (dist - p1.getRadius() - p2.getRadius() < rc) {
+                    allNeighbors.get(p1.getId()).add(p2.getId());
+                    allNeighbors.get(p2.getId()).add(p1.getId());
+                }
+            }
 
             for (int neighborIndex : cellNeighbors.get(cellIndex)) {
                 for (Particle p2 : grid.get(neighborIndex)) {
-                    if (neighborIndex==cellIndex && p1.getId() >= p2.getId()) continue;
-
+                    if (p1.getId() >= p2.getId()) continue;
                     double dist = calculateDistance(p1, p2);
-
-                    if (dist - p1.getRadius() - p2.getRadius() < rc ) {
-                        neighbors.add(p2.getId());
+                    if (dist - p1.getRadius() - p2.getRadius() < rc) {
+                        allNeighbors.get(p1.getId()).add(p2.getId());
+                        allNeighbors.get(p2.getId()).add(p1.getId());
                     }
                 }
             }
-            allNeighbors.put(p1.getId(), neighbors);
         }
-        return allNeighbors;
+
+        Map<Integer, List<Integer>> result = new HashMap<>();
+        for (Map.Entry<Integer, Set<Integer>> entry : allNeighbors.entrySet()) {
+            result.put(entry.getKey(), new ArrayList<>(entry.getValue()));
+        }
+
+        return result;
     }
+
 
     public Map<Integer, List<Integer>> findNeighborsBruteForce() {
         Map<Integer, List<Integer>> allNeighbors = new HashMap<>();
@@ -224,5 +248,23 @@ public class CellIndexSimulation {
         } catch (IOException e) {
             System.err.println("Error writing output files: " + e.getMessage());
         }
+
+        boolean iguales = true;
+        for (int i = 0; i < N; i++) {
+            List<Integer> bruteNeighbors = neighborsBruteForceMap.get(i);
+            List<Integer> cimNeighbors = neighborsCIMMap.get(i);
+            if (!bruteNeighbors.containsAll(cimNeighbors) || !cimNeighbors.containsAll(bruteNeighbors)) {
+                System.out.println("Diferencias en la partícula " + i);
+                System.out.println("BruteForce: " + bruteNeighbors);
+                System.out.println("CIM:        " + cimNeighbors);
+                iguales = false;
+            }
+        }
+        if (iguales) {
+            System.out.println("✅ Ambos métodos dan los mismos vecinos.");
+        } else {
+            System.out.println("❌ Hay diferencias entre los métodos.");
+        }
+
     }
 }
