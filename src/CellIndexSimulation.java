@@ -198,62 +198,64 @@ public class CellIndexSimulation {
 
     public static void main(String[] args) {
 
-        int[] N_values = {100};
-        int[] M_values = {5, 10, 15};
+        int[] N_values = {1000};
+        int[] M_values = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
         double[] L_values = {20.0};
         double[] rc_values = {1.0};
 
         double r = 0.25;
-        boolean periodic = false;
+        boolean periodic = true;
 
         try (FileWriter writer = new FileWriter("resultados.txt")) {
-            writer.write("M,L,rc,N,metodo,tiempo_ms\n");
+            writer.write("Corrida,M,L,rc,N,metodo,tiempo_ms\n");
         
 
             for (int N : N_values) {
                 for (int M : M_values) {
                     for (double L : L_values) {
                         for (double rc : rc_values) {
+                            for(int count=0; count<30; count++) {
 
-                            System.out.println("----------------------------------------");
-                            System.out.printf("Ejecutando N=%d, L=%.1f, M=%d, rc=%.1f, r=%.2f, periodic=%b\n", N, L, M, rc, r, periodic);
+                                System.out.println("----------------------------------------");
+                                System.out.printf("Ejecutando corrida %d: N=%d, L=%.1f, M=%d, rc=%.1f, r=%.2f, periodic=%b\n", count, N, L, M, rc, r, periodic);
 
-                            if(L / M > rc && M < L)  {
-                                CellIndexSimulation sim = new CellIndexSimulation(N, L, M, rc, r, periodic);
+                                if(L / M > rc+2*r && M < L)  {
+                                    CellIndexSimulation sim = new CellIndexSimulation(N, L, M, rc, r, periodic);
 
-                                long startTimeBF = System.nanoTime();
-                                Map<Integer, List<Integer>> neighborsBruteForceMap = sim.findNeighborsBruteForce();
-                                long endTimeBF = System.nanoTime();
-                                double durationBF = (endTimeBF - startTimeBF) / 1_000_000.0; // milisegundos con decimales
-                                writer.write(String.format("%d,%.1f,%.2f,%d,%s,%.3f\n", M, L, rc, N, "FuerzaBruta", durationBF));
+                                    long startTimeBF = System.nanoTime();
+                                    Map<Integer, List<Integer>> neighborsBruteForceMap = sim.findNeighborsBruteForce();
+                                    long endTimeBF = System.nanoTime();
+                                    double durationBF = (endTimeBF - startTimeBF) / 1_000_000.0; // milisegundos con decimales
+                                    writer.write(String.format("%d,%d,%.1f,%.2f,%d,%s,%.3f\n", count, M, L, rc, N, "FuerzaBruta", durationBF));
 
-                                long startTimeCIM = System.nanoTime();
-                                Map<Integer, List<Integer>> neighborsCIMMap = sim.findNeighborsCIM();
-                                long endTimeCIM = System.nanoTime();
-                                double durationCIM = (endTimeCIM - startTimeCIM) / 1_000_000.0; // milisegundos con decimales
-                                writer.write(String.format("%d,%.1f,%.2f,%d,%s,%.3f\n", M, L, rc, N, "CellIndex", durationCIM));
+                                    long startTimeCIM = System.nanoTime();
+                                    Map<Integer, List<Integer>> neighborsCIMMap = sim.findNeighborsCIM();
+                                    long endTimeCIM = System.nanoTime();
+                                    double durationCIM = (endTimeCIM - startTimeCIM) / 1_000_000.0; // milisegundos con decimales
+                                    writer.write(String.format("%d,%d,%.1f,%.2f,%d,%s,%.3f\n", count, M, L, rc, N, "CellIndex", durationCIM));
 
-                                try {
-                                    sim.writeOutputFiles(neighborsBruteForceMap,true, M, L, rc);
-                                    sim.writeOutputFiles(neighborsCIMMap,false, M, L, rc);
-                                } catch (IOException e) {
-                                    System.err.println("Error writing output files: " + e.getMessage());
-                                }
-                                
-                                boolean iguales = true;
-                                for (int i = 0; i < N; i++) {
-                                    List<Integer> bruteNeighbors = neighborsBruteForceMap.get(i);
-                                    List<Integer> cimNeighbors = neighborsCIMMap.get(i);
-                                    if (!bruteNeighbors.containsAll(cimNeighbors) || !cimNeighbors.containsAll(bruteNeighbors)) {
-                                        iguales = false;
+                                    try {
+                                        sim.writeOutputFiles(neighborsBruteForceMap,true, M, L, rc);
+                                        sim.writeOutputFiles(neighborsCIMMap,false, M, L, rc);
+                                    } catch (IOException e) {
+                                        System.err.println("Error writing output files: " + e.getMessage());
                                     }
-                                }
-                                if (iguales) {
-                                    System.out.println("✅ Ambos métodos dan los mismos vecinos.");
-                                } else {
-                                    System.out.println("❌ Hay diferencias entre los métodos.");
-                                }
-                            } else System.out.printf("❌ Saltando (N=%d, L=%.1f, M=%d, rc=%.1f) porque L/M <= rc\n", N, L, M, rc);
+                                    
+                                    boolean iguales = true;
+                                    for (int i = 0; i < N; i++) {
+                                        List<Integer> bruteNeighbors = neighborsBruteForceMap.get(i);
+                                        List<Integer> cimNeighbors = neighborsCIMMap.get(i);
+                                        if (!bruteNeighbors.containsAll(cimNeighbors) || !cimNeighbors.containsAll(bruteNeighbors)) {
+                                            iguales = false;
+                                        }
+                                    }
+                                    if (iguales) {
+                                        System.out.println("✅ Ambos métodos dan los mismos vecinos.");
+                                    } else {
+                                        System.out.println("❌ Hay diferencias entre los métodos.");
+                                    }
+                                } else System.out.printf("❌ Saltando (N=%d, L=%.1f, M=%d, rc=%.1f) porque L/M <= rc\n", N, L, M, rc);
+                            }
                         }
                     }
                 }

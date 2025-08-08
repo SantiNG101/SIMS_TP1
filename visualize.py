@@ -69,22 +69,22 @@ def visualize_simulation(particles_file, neighbors_file):
         elif p_id in special_neighbors:
             color = 'lightgreen'
         else:
-            color = 'skyblue'
+            color = 'lightgrey'
         circle = patches.Circle((data['x'], data['y']), radius=data['r'],
                                 facecolor=color, edgecolor='black', linewidth=0.75, zorder=10)
         ax.add_patch(circle)
 
     # Dibujar líneas entre vecinos
-    drawn_pairs = set()
-    for p_id, neighbors in all_neighbors.items():
-        p1_coords = (particles[p_id]['x'], particles[p_id]['y'])
-        for neighbor_id in neighbors:
-            pair = tuple(sorted((p_id, neighbor_id)))
-            if pair not in drawn_pairs:
-                p2_coords = (particles[neighbor_id]['x'], particles[neighbor_id]['y'])
-                ax.plot([p1_coords[0], p2_coords[0]], [p1_coords[1], p2_coords[1]],
-                        color='red', linestyle='-', linewidth=1.5, zorder=1)
-                drawn_pairs.add(pair)
+    ##drawn_pairs = set()
+    ##for p_id, neighbors in all_neighbors.items():
+      ##  p1_coords = (particles[p_id]['x'], particles[p_id]['y'])
+      ##  for neighbor_id in neighbors:
+        ##    pair = tuple(sorted((p_id, neighbor_id)))
+         ##   if pair not in drawn_pairs:
+          ##      p2_coords = (particles[neighbor_id]['x'], particles[neighbor_id]['y'])
+         ##       ax.plot([p1_coords[0], p2_coords[0]], [p1_coords[1], p2_coords[1]],
+            ##            color='red', linestyle='-', linewidth=1.5, zorder=1)
+            ##    drawn_pairs.add(pair)
 
     ax.set_title(f'Visualización de vecinos (N={N}, M={M}x{M}) {particles_file}')
     ax.set_xlabel('Posición X')
@@ -94,4 +94,4 @@ def visualize_simulation(particles_file, neighbors_file):
 
 
 if __name__ == '__main__':
-    visualize_simulation("particles_M15_L20.0_rc1.0_CIM.txt", "neighbors_M15_L20.0_rc1.0_CIM.txt")
+    visualize_simulation("particles_M12_L20.0_rc1.0_CIM.txt", "neighbors_M12_L20.0_rc1.0_CIM.txt")
