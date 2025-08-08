@@ -2,13 +2,13 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import random
 
-def visualize_simulation():
+def visualize_simulation(particles_file='particlesCIM.txt', neighbors_file='neighborsCIM.txt'):
 
     particles = {}
     all_neighbors = {}
 
     try:
-        with open('particlesCIM.txt', 'r') as f:
+        with open(particles_file, 'r') as f:
             header = f.readline().strip().split()
             N, L, M = int(header[0]), float(header[1]), int(header[2])
             for line in f:
@@ -20,7 +20,7 @@ def visualize_simulation():
         return
 
     try:
-        with open('neighborsCIM.txt', 'r') as f:
+        with open(neighbors_file, 'r') as f:
             for line in f:
                 parts = [int(p) for p in line.strip().split()]
                 p_id = parts[0]
@@ -75,18 +75,18 @@ def visualize_simulation():
         ax.add_patch(circle)
 
     # Dibujar líneas entre vecinos
-    drawn_pairs = set()
-    for p_id, neighbors in all_neighbors.items():
-        p1_coords = (particles[p_id]['x'], particles[p_id]['y'])
-        for neighbor_id in neighbors:
-            pair = tuple(sorted((p_id, neighbor_id)))
-            if pair not in drawn_pairs:
-                p2_coords = (particles[neighbor_id]['x'], particles[neighbor_id]['y'])
-                ax.plot([p1_coords[0], p2_coords[0]], [p1_coords[1], p2_coords[1]],
-                        color='red', linestyle='-', linewidth=1.5, zorder=1)
-                drawn_pairs.add(pair)
+  ##  drawn_pairs = set()
+   ## for p_id, neighbors in all_neighbors.items():
+   ##     p1_coords = (particles[p_id]['x'], particles[p_id]['y'])
+    ##    for neighbor_id in neighbors:
+     ##       pair = tuple(sorted((p_id, neighbor_id)))
+       ##     if pair not in drawn_pairs:
+        ##        p2_coords = (particles[neighbor_id]['x'], particles[neighbor_id]['y'])
+         ##       ax.plot([p1_coords[0], p2_coords[0]], [p1_coords[1], p2_coords[1]],
+         ##               color='red', linestyle='-', linewidth=1.5, zorder=1)
+          ##      drawn_pairs.add(pair)
 
-    ax.set_title(f'Visualización de vecinos (N={N}, M={M}x{M})')
+    ax.set_title(f'Visualización de vecinos (N={N}, M={M}x{M}) {particles_file}')
     ax.set_xlabel('Posición X')
     ax.set_ylabel('Posición Y')
     plt.grid(False)
@@ -95,3 +95,4 @@ def visualize_simulation():
 
 if __name__ == '__main__':
     visualize_simulation()
+    visualize_simulation("particlesbruteForce.txt", "neighborsbruteForce.txt")
