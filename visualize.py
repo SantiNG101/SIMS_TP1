@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import random
 
-def visualize_simulation(particles_file='particlesCIM.txt', neighbors_file='neighborsCIM.txt'):
+def visualize_simulation(particles_file, neighbors_file):
 
     particles = {}
     all_neighbors = {}
@@ -16,7 +16,7 @@ def visualize_simulation(particles_file='particlesCIM.txt', neighbors_file='neig
                 p_id, x, y, r = int(parts[0]), float(parts[1]), float(parts[2]), float(parts[3])
                 particles[p_id] = {'x': x, 'y': y, 'r': r}
     except FileNotFoundError:
-        print("Error: 'particlesCIM.txt' no encontrado. Ejecuta la simulación en Java primero.")
+        print(f"Error: '{particles_file}' no encontrado. Ejecuta la simulación en Java primero.")
         return
 
     try:
@@ -27,7 +27,7 @@ def visualize_simulation(particles_file='particlesCIM.txt', neighbors_file='neig
                 neighbors = set(parts[1:])
                 all_neighbors[p_id] = neighbors
     except FileNotFoundError:
-        print("Error: 'neighborsCIM.txt' no encontrado. Ejecuta la simulación en Java primero.")
+        print(f"Error: '{neighbors_file}' no encontrado. Ejecuta la simulación en Java primero.")
         return
 
     # Elegir una partícula
@@ -94,5 +94,4 @@ def visualize_simulation(particles_file='particlesCIM.txt', neighbors_file='neig
 
 
 if __name__ == '__main__':
-    visualize_simulation()
-    visualize_simulation("particlesbruteForce.txt", "neighborsbruteForce.txt")
+    visualize_simulation("particles_M15_L20.0_rc1.0_CIM.txt", "neighbors_M15_L20.0_rc1.0_CIM.txt")
