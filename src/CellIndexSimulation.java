@@ -95,8 +95,11 @@ public class CellIndexSimulation {
 
     public Map<Integer, List<Integer>> findNeighborsCIM() {
         Map<Integer, List<Integer>> allNeighbors = new HashMap<>();
+        for (int i = 0; i < N; i++) {
+            allNeighbors.put(i, new ArrayList<>());
+        }
         for (Particle p1 : particles) {
-            List<Integer> neighbors = new ArrayList<>();
+            List<Integer> neighbors = allNeighbors.get(p1.getId());
             int cellX = (int) (p1.getX() / cellSize);
             int cellY = (int) (p1.getY() / cellSize);
             int cellIndex = cellX + cellY * M;
@@ -109,6 +112,7 @@ public class CellIndexSimulation {
 
                     if (dist - p1.getRadius() - p2.getRadius() < rc ) {
                         neighbors.add(p2.getId());
+                        allNeighbors.get(p2.getId()).add(p1.getId());
                     }
                 }
             }
@@ -192,11 +196,11 @@ public class CellIndexSimulation {
 
     public static void main(String[] args) {
         int N = args.length > 0 ? Integer.parseInt(args[0]) : 200;
-        int M = args.length > 1 ? Integer.parseInt(args[1]) : 10;
+        int M = args.length > 1 ? Integer.parseInt(args[1]) : 5;
         double L = 20.0;
         double rc = 1.0;
         double r = 0.25;
-        boolean periodic = true;
+        boolean periodic = false;
         System.out.println("Running Simulation with:");
         System.out.printf("N=%d, L=%.1f, M=%d, rc=%.1f, r=%.2f, periodic=%b\n", N, L, M, rc, r, periodic);
         System.out.println("----------------------------------------");
@@ -223,6 +227,22 @@ public class CellIndexSimulation {
             System.out.println("Or run 'python visualizeComparison.py' to compare both method's results.");
         } catch (IOException e) {
             System.err.println("Error writing output files: " + e.getMessage());
+        }
+        boolean iguales = true;
+        for (int i = 0; i < N; i++) {
+            List<Integer> bruteNeighbors = neighborsBruteForceMap.get(i);
+            List<Integer> cimNeighbors = neighborsCIMMap.get(i);
+            if (!bruteNeighbors.containsAll(cimNeighbors) || !cimNeighbors.containsAll(bruteNeighbors)) {
+                System.out.println("Diferencias en la partícula " + i);
+                System.out.println("BruteForce: " + bruteNeighbors);
+                System.out.println("CIM:        " + cimNeighbors);
+                iguales = false;
+            }
+        }
+        if (iguales) {
+            System.out.println("✅ Ambos métodos dan los mismos vecinos.");
+        } else {
+            System.out.println("❌ Hay diferencias entre los métodos.");
         }
     }
 }
