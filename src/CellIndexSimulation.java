@@ -68,6 +68,7 @@ public class CellIndexSimulation {
                 int cellIndex = cellX + cellY * M;
                 List<Integer> neighbors = new ArrayList<>();
 
+                // (0,0) (0,1) (1,-1) (1,0) (1,1)
                 for (int dx = 0; dx <= 1; dx++) {
                     for (int dy = -1; dy <= 1; dy++) {
                         if ( dx==0 && dy==-1 ) continue;
@@ -195,6 +196,7 @@ public class CellIndexSimulation {
     }
 
     public static void main(String[] args) {
+
         int N = args.length > 0 ? Integer.parseInt(args[0]) : 200;
         int M = args.length > 1 ? Integer.parseInt(args[1]) : 10;
         double L = 20.0;
@@ -204,6 +206,11 @@ public class CellIndexSimulation {
         System.out.println("Running Simulation with:");
         System.out.printf("N=%d, L=%.1f, M=%d, rc=%.1f, r=%.2f, periodic=%b\n", N, L, M, rc, r, periodic);
         System.out.println("----------------------------------------");
+
+        if(L / M <= rc)  {
+            System.out.println("❌ No se cumple la condición L / M > rc");
+            return;
+        }
 
         CellIndexSimulation sim = new CellIndexSimulation(N, L, M, rc, r, periodic);
 
